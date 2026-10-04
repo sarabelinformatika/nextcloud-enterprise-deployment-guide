@@ -1,0 +1,15 @@
+service:
+  fqdn: cloud.example.com
+  rto_hours: 4
+  rpo_hours: 1
+zones:
+  edge: [reverse-proxy]
+  application: [nextcloud-web, php-fpm]
+  data: [postgresql, redis, primary-storage]
+  management: [monitoring, backup, administration]
+controls:
+  mfa_required: true
+  public_database: false
+  public_redis: false
+  system_cron: true
+  offsite_backup: true

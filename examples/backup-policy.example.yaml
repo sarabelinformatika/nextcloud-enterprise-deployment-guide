@@ -1,0 +1,11 @@
+policy:
+  consistency: maintenance-window-or-snapshot-coordination
+  datasets: [database, data, config, apps, encryption-material]
+  local_retention:
+    daily: 7
+    weekly: 4
+    monthly: 12
+  offsite_copy: true
+  immutable_copy: true
+  encryption: true
+  restore_test_frequency: quarterly

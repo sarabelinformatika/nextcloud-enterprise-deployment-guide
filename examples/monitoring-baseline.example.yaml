@@ -1,0 +1,14 @@
+checks:
+  - name: https-availability
+    interval_seconds: 60
+  - name: certificate-expiry
+    warn_days: 30
+    critical_days: 14
+  - name: cron-age
+    warn_minutes: 10
+    critical_minutes: 20
+  - name: storage-capacity
+    warn_percent: 80
+    critical_percent: 90
+  - name: backup-age
+    critical_hours: 26

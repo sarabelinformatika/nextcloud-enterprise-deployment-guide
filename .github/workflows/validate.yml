@@ -1,0 +1,55 @@
+name: Validate guide
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Validate Bash syntax
+        run: bash -n scripts/*.sh
+
+      - name: Run ShellCheck
+        run: shellcheck scripts/*.sh
+
+      - name: Validate YAML
+        run: |
+          ruby -e 'require "yaml"; Dir["**/*.{yml,yaml}"].each { |f| YAML.load_stream(File.read(f)); puts f }'
+
+      - name: Validate internal Markdown links and images
+        run: |
+          python3 - <<'PY'
+          import pathlib, re, sys
+          root = pathlib.Path(".")
+          errors = []
+          pattern = re.compile(r'!?\[[^\]]*\]\(([^)]+)\)')
+          for md in root.rglob("*.md"):
+              text = md.read_text(encoding="utf-8")
+              for raw in pattern.findall(text):
+                  target = raw.split("#", 1)[0].strip()
+                  if not target or "://" in target or target.startswith(("mailto:", "#")):
+                      continue
+                  path = (md.parent / target).resolve()
+                  if not path.exists():
+                      errors.append(f"{md}: missing {target}")
+          if errors:
+              print("\n".join(errors))
+              sys.exit(1)
+          PY
+
+      - name: Reject sensitive files
+        run: |
+          if find . -type f \( -name '*.pem' -o -name '*.key' -o -name '*.p12' -o -name '.env' -o -name '*.sql' \) -print -quit | grep -q .; then
+            echo "Sensitive file pattern detected"
+            exit 1
+          fi
+
+      - name: Check whitespace
+        run: git diff --check
